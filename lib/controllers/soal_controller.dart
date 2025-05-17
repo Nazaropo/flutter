@@ -4,10 +4,29 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_application/models/soal_model.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application/views/nilai_page.dart';
 
 import 'package:get/get.dart';
 
 class SoalController extends GetxController {
+  //User
+  late PageController _pageController;
+  PageController get pageController => _pageController;
+  bool _isAnswered = false;
+  bool get isAnswered => _isAnswered;
+
+  int _correctAns = 0;
+  int get correctAns => _correctAns;
+
+  int _selectedAns = 0;
+  int get selectedAns => _selectedAns;
+
+  int _numOfCorrectAns = 0;
+  int get numOfCorrectAns => _numOfCorrectAns;
+
+  final RxInt _soalNomor = 1.obs;
+  RxInt get soalNomor => _soalNomor;
+
   final List<Soal> _soals = [];
   List<Soal> get soals => _soals;
   final TextEditingController soalController = TextEditingController();
@@ -68,5 +87,51 @@ class SoalController extends GetxController {
     savedKategoris.assignAll(kategoris);
     savedDeskripsi.assignAll(deskripsis);
     update();
+  }
+
+  void loadSoalFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final soalJson = prefs.getStringList('soals') ?? [];
+
+    _soals.clear();
+    _soals.addAll(
+      soalJson.map((json) => Soal.fromJson(jsonDecode(json))).toList(),
+    );
+    update();
+  }
+
+  List<Soal> getSoalsByKategory(String kategory) {
+    return _soals.where((soal) => soal.kategory == kategory).toList();
+  }
+
+  void checkAns(Soal soal, int selectedINdex) {
+    _isAnswered = true;
+    _correctAns = soal.jawaban;
+    _selectedAns = selectedINdex;
+
+    if (_correctAns == _selectedAns) _numOfCorrectAns++;
+
+    nextSoal();
+  }
+
+  void nextSoal() async {
+    if (_soalNomor.value != _soals.length) {
+      _isAnswered = false;
+
+      _pageController.nextPage(
+        duration: const Duration(microseconds: 250),
+        curve: Curves.ease,
+      );
+    } else {
+      Get.to(const NilaiPage());
+    }
+  }
+
+  @override
+  void onInit() {
+    loadSoalKategoryFromSharedPrefrences();
+    loadSoalFromSharedPreferences();
+    _pageController = PageController();
+    super.onInit();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/controllers/soal_controller.dart';
+import 'package:flutter_application/views/quiz_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
@@ -25,7 +26,13 @@ class QuizKategorySceen extends StatelessWidget {
               itemBuilder: (context, index) {
                 return Card(
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Get.to(
+                        QuizScreen(
+                          kategory: _soalController.savedKategoris[index],
+                        ),
+                      );
+                    },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
